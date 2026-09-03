@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QueryVerse · by Pulkit Dheer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.13.0/sql-wasm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+ --bg:#070914;--card:rgba(18,22,42,.78);--card2:#10152a;--line:#28304e;--text:#f4f7ff;
+ --muted:#929bb7;--a:#7c5cff;--b:#21e6b8;--pink:#ff4fd8;--yellow:#ffd166;--danger:#ff6b86;
+}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;overflow:auto}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);background:
+ radial-gradient(circle at 10% 10%,#25185a 0,transparent 28%),radial-gradient(circle at 88% 12%,#063c42 0,transparent 26%),var(--bg)}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.top{height:68px;display:flex;align-items:center;padding:0 24px;border-bottom:1px solid #ffffff12;background:#080b18cc;backdrop-filter:blur(18px);z-index:5}
+.brand{display:flex;align-items:center;gap:11px;font-weight:900;font-size:19px;letter-spacing:-.4px}.orb{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--a),var(--pink));box-shadow:0 0 28px #7c5cff66;animation:float 3s ease-in-out infinite}
+.brand span{color:#a99cff;font-size:10px;font-weight:700;align-self:flex-end;margin:0 0 5px -7px;letter-spacing:.4px}.topnav{display:flex;gap:5px;margin-left:34px}.nav{padding:9px 13px;border-radius:10px;color:var(--muted);background:transparent}.nav:hover,.nav.active{color:#fff;background:#ffffff0d}.right{margin-left:auto;display:flex;align-items:center;gap:10px}.pill{font-size:12px;padding:7px 10px;border:1px solid #ffffff12;border-radius:999px;background:#ffffff08;color:var(--muted)}
+.main{flex:1;min-height:0;position:relative}.page{position:absolute;inset:0;overflow:auto;padding:30px;opacity:0;transform:translateY(12px);pointer-events:none;transition:.35s ease}.page.active{opacity:1;transform:none;pointer-events:auto}
+.home{max-width:1150px;margin:auto}.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}.heroCard,.card{background:var(--card);border:1px solid #ffffff10;border-radius:22px;box-shadow:0 20px 70px #0005;backdrop-filter:blur(16px)}
+.heroCard{padding:34px;min-height:290px;position:relative;overflow:hidden}.heroCard:after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;right:-90px;top:-100px;background:#7c5cff33;filter:blur(5px)}
+.eyebrow{color:var(--b);font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:1.7px}.hero h1{font-size:46px;line-height:1.02;letter-spacing:-2.5px;margin:12px 0}.hero h1 em{font-style:normal;background:linear-gradient(90deg,#fff,#a99cff,#21e6b8);background-clip:text;color:transparent}.hero p{color:var(--muted);max-width:620px;font-size:15px}.cta{margin-top:24px;padding:12px 17px;border-radius:12px;background:linear-gradient(135deg,var(--a),#a347ff);font-weight:800;box-shadow:0 10px 28px #7c5cff35}.cta:hover{transform:translateY(-2px);box-shadow:0 14px 34px #7c5cff55}
+.stats{padding:24px;display:flex;flex-direction:column;justify-content:space-between}.statTop{display:flex;justify-content:space-between}.level{font-size:12px;color:var(--muted)}.level b{display:block;font-size:30px;color:#fff}.bar{height:9px;background:#ffffff0d;border-radius:99px;overflow:hidden;margin:14px 0}.fill{height:100%;width:0;background:linear-gradient(90deg,var(--a),var(--pink),var(--b));border-radius:99px;transition:1s}.xp{font-size:12px;color:var(--muted)}.miniGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:18px}.mini{padding:11px;border:1px solid #ffffff0b;border-radius:12px;background:#ffffff05;text-align:center}.mini b{display:block}.mini span{font-size:11px;color:var(--muted)}
+.sectionTitle{display:flex;align-items:end;justify-content:space-between;margin:30px 0 12px}.sectionTitle h2{margin:0;font-size:20px}.sectionTitle span{color:var(--muted);font-size:12px}
+.path{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.lesson{padding:19px;position:relative;overflow:hidden;transition:.25s}.lesson:hover{transform:translateY(-4px);border-color:#ffffff24}.lesson .num{font-size:11px;color:var(--b);font-weight:900}.lesson h3{margin:7px 0}.lesson p{color:var(--muted);font-size:12px;min-height:35px}.lesson button{margin-top:8px;background:#ffffff0b;padding:8px 11px;border-radius:9px}.done{position:absolute;right:15px;top:15px;color:var(--b)}
+.practiceGrid{height:100%;display:grid;grid-template-columns:250px 1fr;gap:13px}.side{padding:14px;overflow:auto}.side h3{font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin:9px}.sideItem{padding:10px;border-radius:10px;color:#b7c0d6;cursor:pointer}.sideItem:hover,.sideItem.sel{background:#ffffff0b;color:#fff}.editorCard{display:grid;grid-template-rows:52px 1fr 45%;min-height:0;overflow:hidden}.editorHead{display:flex;align-items:center;padding:0 15px;border-bottom:1px solid var(--line);background:#0d1123}.run{margin-left:auto;background:linear-gradient(135deg,var(--b),#12bca1);color:#04110f;font-weight:900;padding:9px 14px;border-radius:10px}.editor{position:relative;min-height:0;background:#080c19}.editor textarea{position:absolute;inset:0;width:100%;height:100%;resize:none;border:0;outline:0;background:transparent;color:#dfe7ff;padding:18px;font:14px/1.7 "Cascadia Code",Consolas,monospace;tab-size:2}.suggest{display:none;position:absolute;z-index:4;width:290px;max-height:220px;overflow:auto;background:#11172b;border:1px solid #394466;border-radius:10px;box-shadow:0 20px 50px #0009}.suggest div{padding:8px 11px;display:flex;justify-content:space-between;cursor:pointer}.suggest div:hover,.suggest div.on{background:#222d4b}.suggest small{color:#687693}.results{min-height:0;overflow:auto;padding:15px;background:#090d19;border-top:1px solid var(--line)}table{border-collapse:collapse;min-width:60%;font-size:13px}th,td{padding:8px 11px;border:1px solid #293452;text-align:left;white-space:nowrap}th{background:#151c32}.msg{padding:13px;border-radius:10px;background:#11182b;border:1px solid #293452;color:#b9c4db}.ok{border-color:#145f55;color:#99f6e4}.err{border-color:#7f2840;color:#ffc0cc}.empty{color:var(--muted);padding:35px;text-align:center}
+.learn{max-width:1150px;margin:auto}.learnGrid{display:grid;grid-template-columns:235px 1fr;gap:14px}.lessonNav{padding:12px;height:max-content}.topic{padding:10px;border-radius:9px;color:#aeb8cf;cursor:pointer;margin:3px 0}.topic:hover,.topic.sel{background:#ffffff0c;color:#fff}.topic.done{color:var(--b)}.theory{padding:25px}.theory h1{margin-top:0}.theory h2{margin-top:24px}.theory p,.theory li{color:#bbc5da;line-height:1.65}.code{background:#070b15;border:1px solid #293452;border-radius:11px;padding:15px;font:13px/1.65 Consolas,monospace;white-space:pre-wrap}.quiz{margin-top:18px}.q{padding:16px;background:#ffffff05;border:1px solid #ffffff0d;border-radius:13px;margin:12px 0}.opt{display:block;padding:9px;border:1px solid #ffffff0d;border-radius:8px;margin:7px 0;cursor:pointer}.opt:hover{background:#ffffff08}.feedback{margin-top:9px;padding:9px;border-radius:8px;font-size:12px}.good{background:#06251f;color:#99f6e4}.bad{background:#2a1019;color:#ffc0cc}.assessBtn{padding:11px 15px;border-radius:10px;background:linear-gradient(135deg,var(--a),var(--pink));font-weight:800}
+.toast{position:fixed;right:22px;bottom:22px;padding:12px 15px;border:1px solid #ffffff18;border-radius:12px;background:#11172bd9;backdrop-filter:blur(12px);transform:translateY(20px);opacity:0;transition:.3s;z-index:30}.toast.show{opacity:1;transform:none}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media(max-width:850px){.hero,.path{grid-template-columns:1fr}.practiceGrid,.learnGrid{grid-template-columns:1fr}.side{max-height:180px}.topnav{margin-left:10px}.nav{padding:8px}.hero h1{font-size:36px}}
+
+/* Cloud authentication */
+#authScreen{position:fixed;inset:0;z-index:100;background:
+ radial-gradient(circle at 15% 15%,#25185a 0,transparent 30%),
+ radial-gradient(circle at 85% 20%,#063c42 0,transparent 28%),var(--bg);
+ display:flex;align-items:center;justify-content:center;padding:24px}
+.authBox{width:min(440px,100%);padding:32px;background:rgba(18,22,42,.9);border:1px solid #ffffff14;border-radius:24px;box-shadow:0 30px 100px #0009;backdrop-filter:blur(20px)}
+.authLogo{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:900;margin-bottom:8px}
+.authOrb{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--a),var(--pink));box-shadow:0 0 28px #7c5cff66}
+.authSub{color:var(--muted);font-size:13px;margin-bottom:25px}
+.authTabs{display:flex;gap:6px;background:#ffffff07;padding:5px;border-radius:12px;margin-bottom:18px}
+.authTab{flex:1;padding:10px;border-radius:9px;background:transparent;color:var(--muted);font-weight:800}
+.authTab.active{background:#ffffff10;color:#fff}
+.authField{margin:12px 0}.authField label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px}
+.authField input{width:100%;padding:12px 13px;border-radius:10px;border:1px solid #ffffff14;background:#080c19;color:#fff;outline:none}
+.authField input:focus{border-color:#7c5cff88}
+.authSubmit{width:100%;margin-top:12px;padding:12px;border-radius:11px;background:linear-gradient(135deg,var(--a),var(--pink));font-weight:900}
+.authMsg{margin-top:12px;padding:10px;border-radius:9px;font-size:12px;display:none;white-space:pre-wrap}
+.authMsg.show{display:block}.authMsg.err{background:#2a1019;color:#ffc0cc}.authMsg.ok{background:#06251f;color:#99f6e4}
+.userPill{cursor:pointer}
+
+</style>
+</head>
+<body>
+
+<div id="authScreen">
+  <div class="authBox">
+    <div class="authLogo"><div class="authOrb"></div>QueryVerse</div>
+    <div class="authSub">SQL practice, learning & your cloud-saved workspace.<br><small>by Pulkit Dheer</small></div>
+    <div class="authTabs">
+      <button class="authTab active" id="loginTab" onclick="showAuth('login')">Login</button>
+      <button class="authTab" id="signupTab" onclick="showAuth('signup')">Create account</button>
+    </div>
+    <form id="authForm" onsubmit="submitAuth(event)">
+      <div class="authField">
+        <label>EMAIL</label>
+        <input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com">
+      </div>
+      <div class="authField">
+        <label>PASSWORD</label>
+        <input id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="Minimum 6 characters">
+      </div>
+      <button class="authSubmit" id="authSubmit" type="submit">Login →</button>
+    </form>
+    <div class="authMsg" id="authMsg"></div>
+    <div style="margin-top:18px;color:#687693;font-size:11px;text-align:center">
+      Your workspace is private to your account.
+    </div>
+  </div>
+</div>
+
+<div class="app">
+<header class="top">
+ <div class="brand"><div class="orb"></div>QueryVerse <span>by Pulkit Dheer</span></div>
+ <nav class="topnav">
+  <button class="nav active" data-page="home">Home</button>
+  <button class="nav" data-page="practice">Practice Lab</button>
+  <button class="nav" data-page="learn">Learn</button>
+ </nav>
+ <div class="right"><div class="pill userPill" id="userPill" onclick="logout()">Login required</div><div class="pill" id="dbStatus">● Loading SQLite</div><div class="pill">⚡ <span id="xpTop">0</span> XP</div></div>
+</header>
+<main class="main">
+<section id="home" class="page active">
+ <div class="home">
+  <div class="hero">
+   <div class="heroCard">
+    <div class="eyebrow">Your personal database playground</div>
+    <h1>Learn SQL.<br><em>Break things.</em><br>Master databases.</h1>
+    <p>Read a concept, experiment in the lab, get instant feedback, and build your database skills one challenge at a time.</p>
+    <button class="cta" onclick="go('learn')">Start learning →</button>
+   </div>
+   <div class="card stats">
+    <div class="statTop"><div class="level"><b id="level">Level 1</b>Database Explorer</div><div style="font-size:28px">🧠</div></div>
+    <div><div class="bar"><div class="fill" id="homeFill"></div></div><div class="xp"><span id="xpHome">0</span> XP earned · <span id="lessonsDone">0</span> lessons mastered</div></div>
+    <div class="miniGrid"><div class="mini"><b>⌘</b><span>Practice</span></div><div class="mini"><b>✓</b><span>Assess</span></div><div class="mini"><b>∞</b><span>Experiment</span></div></div>
+   </div>
+  </div>
+  <div class="sectionTitle"><h2>Your learning path</h2><span>Small steps → real confidence</span></div>
+  <div class="path" id="homePath"></div>
+ </div>
+</section>
+
+<section id="practice" class="page">
+ <div class="practiceGrid">
+  <aside class="card side">
+   <h3>Database</h3><div id="tree"><div class="sideItem">Loading…</div></div>
+   <h3 style="margin-top:20px">Quick library</h3>
+   <div class="sideItem" onclick="insertText('SELECT * FROM ')">SELECT</div>
+   <div class="sideItem" onclick="insertText('WHERE ')">WHERE</div>
+   <div class="sideItem" onclick="insertText('INNER JOIN ')">INNER JOIN</div>
+   <div class="sideItem" onclick="insertText('GROUP BY ')">GROUP BY</div>
+   <div class="sideItem" onclick="insertText('ORDER BY ')">ORDER BY</div>
+   <div class="sideItem" onclick="insertText('CREATE TABLE ')">CREATE TABLE</div>
+  </aside>
+  <div class="card editorCard">
+   <div class="editorHead"><b>⚡ Practice Lab</b><span style="margin-left:10px;color:var(--muted);font-size:12px">SQLite · autocomplete</span><button onclick="loadSample()" style="margin-left:auto;margin-right:8px;background:#ffffff0b;padding:9px;border-radius:9px">Sample</button><button class="run" onclick="run()">▶ Run · Ctrl Enter</button></div>
+   <div class="editor"><textarea id="editor" spellcheck="false"></textarea><div id="suggest" class="suggest"></div></div>
+   <div class="results" id="results"><div class="empty">Run a query and your results will appear here ✨</div></div>
+  </div>
+ </div>
+</section>
+
+<section id="learn" class="page">
+ <div class="learn">
+  <div class="sectionTitle"><div><h2>🧭 Database Mastery</h2><span>Learn → practice → assess</span></div><span id="learnProgress"></span></div>
+  <div class="learnGrid">
+   <aside class="card lessonNav" id="lessonNav"></aside>
+   <article class="card theory" id="theory"></article>
+  </div>
+ </div>
+</section>
+</main>
+<div id="toast" class="toast"></div>
+</div>
+<script>
+const sample=`CREATE TABLE students (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  course TEXT,
+  marks INTEGER
+);
+
+INSERT INTO students VALUES
+(1, 'Pulkit', 'BCA AI', 88),
+(2, 'Rahul', 'BCA AI', 76),
+(3, 'Varnika', 'BCA', 92);
+
+SELECT * FROM students ORDER BY marks DESC;`;
+
+const lessons=[
+{id:'foundations',title:'DBMS Foundations',icon:'🌱',desc:'Data, database, DBMS, RDBMS, schema, instance and architecture.',theory:[
+['Database & DBMS','A database is an organized collection of related data. A DBMS is software used to define, create, store, retrieve, update and control access to databases.'],
+['DBMS vs RDBMS','An RDBMS organizes data as relations (tables) and supports relationships and integrity constraints. Common examples include MySQL, PostgreSQL, Oracle and SQL Server.'],
+['Schema vs instance','A schema is the logical design/structure of a database. An instance is the actual data stored at a particular moment.'],
+['Three-schema architecture','External level describes user views, conceptual level describes the complete logical structure, and internal level describes physical storage. Data independence means changes at one level can be isolated from higher levels.']
+],code:`-- Example schema
+CREATE TABLE students (
+  id INTEGER PRIMARY KEY,
+  name TEXT,
+  marks INTEGER
+);`,qs:[
+['A database schema is…',['The current rows only','The logical structure/design','A SQL error','A hardware device'],1,'Schema describes the structure; the instance is the current data.'],
+['RDBMS primarily represents data using…',['Images','Tables/relations','Only files','HTML pages'],1,'The relational model uses relations, commonly represented as tables.'],
+['The external level describes…',['Physical disk blocks','User views','CPU registers','Indexes only'],1,'The external level is the user/application view.']]},
+
+{id:'er',title:'ER Model & Design',icon:'🗺️',desc:'Entities, attributes, relationships, cardinality and ER-to-table mapping.',theory:[
+['Entity','An entity is a distinguishable real-world object, such as Student, Course, Employee or Product. An entity set is a collection of similar entities.'],
+['Attributes','Attributes describe entities. Simple attributes cannot be meaningfully divided; composite attributes can be divided into components. Multi-valued attributes can have multiple values, and derived attributes can be calculated from other attributes.'],
+['Relationships','A relationship represents an association between entities. Common mapping cardinalities are one-to-one (1:1), one-to-many (1:N), many-to-one (N:1), and many-to-many (M:N).'],
+['Strong vs weak entity','A strong entity has its own key. A weak entity depends on an identifying relationship with an owner entity and generally has a partial key.'],
+['ER to relational schema','Entities usually become tables, simple attributes become columns, and relationships are represented using foreign keys or relationship tables depending on cardinality.']
+],code:`-- Example relational mapping
+CREATE TABLE courses (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+CREATE TABLE students (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  course_id INTEGER,
+  FOREIGN KEY(course_id) REFERENCES courses(id)
+);`,qs:[
+['A Student entity is normally mapped to a…',['Table','Query result only','Transaction','Trigger'],0,'An entity set is commonly represented as a relation/table.'],
+['M:N means…',['One-to-one','One-to-many','Many-to-many','No relationship'],2,'M:N represents many-to-many cardinality.'],
+['A weak entity depends on…',['An owner/identifying entity','CSS','An index only','A SELECT statement'],0,'A weak entity is existence-dependent on an owner entity.']]},
+
+{id:'relational',title:'Relational Model & Keys',icon:'🔑',desc:'Relations, tuples, domains, super keys, candidate keys and foreign keys.',theory:[
+['Relational terminology','Relation = table, tuple = row, attribute = column, domain = permitted set of values. Degree is the number of attributes/columns; cardinality is the number of tuples/rows.'],
+['Super key','A super key is a set of one or more attributes that uniquely identifies a tuple. It may contain unnecessary attributes.'],
+['Candidate key','A candidate key is a minimal super key. A table can have multiple candidate keys.'],
+['Primary & alternate keys','One candidate key is chosen as the primary key. The remaining candidate keys are alternate keys. A primary key uniquely identifies a row and cannot be NULL.'],
+['Foreign key & composite key','A foreign key references a key in another table and helps maintain referential integrity. A composite key uses two or more attributes together.']
+],code:`CREATE TABLE courses (
+  id INTEGER PRIMARY KEY,
+  name TEXT UNIQUE
+);
+
+CREATE TABLE enrollments (
+  student_id INTEGER,
+  course_id INTEGER,
+  PRIMARY KEY(student_id, course_id),
+  FOREIGN KEY(course_id) REFERENCES courses(id)
+);`,qs:[
+['Degree of a relation means…',['Number of rows','Number of columns','Number of databases','Number of keys'],1,'Degree is the number of attributes/columns.'],
+['A minimal super key is called…',['Foreign key','Candidate key','Alternate table','View'],1,'Candidate keys are minimal super keys.'],
+['A composite key contains…',['One attribute only','Two or more attributes','No attributes','Only foreign keys'],1,'Composite keys combine multiple attributes.']]},
+
+{id:'constraints',title:'Data Types & Constraints',icon:'🧩',desc:'Types, NULL, integrity constraints and safe table design.',theory:[
+['Common SQL types','Typical SQL types include INTEGER, DECIMAL/NUMERIC, CHAR, VARCHAR, TEXT, DATE, TIME, TIMESTAMP, BOOLEAN and binary types. Exact availability and behavior depend on the DBMS.'],
+['PRIMARY KEY','Uniquely identifies a row. A primary-key constraint cannot accept NULL for its key values.'],
+['NOT NULL, UNIQUE, CHECK, DEFAULT','NOT NULL requires a value. UNIQUE enforces uniqueness. CHECK enforces a Boolean condition. DEFAULT supplies a value when one is omitted.'],
+['NULL','NULL represents a missing/unknown value, not zero or an empty string. Test it with IS NULL or IS NOT NULL.'],
+['Type choice','Use numeric types for values used in arithmetic. Identifiers such as phone numbers or codes are often better represented as text when leading zeros or formatting matter.']
+],code:`CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  phone TEXT,
+  age INTEGER NOT NULL CHECK(age >= 0),
+  email TEXT UNIQUE,
+  city TEXT DEFAULT 'Delhi'
+);`,qs:[
+['Which constraint requires a value?',['UNIQUE','NOT NULL','DEFAULT','INDEX'],1,'NOT NULL prevents NULL values.'],
+['Correct NULL comparison is…',['= NULL','IS NULL','== NULL ONLY','LIKE NULL'],1,'Use IS NULL / IS NOT NULL.'],
+['A phone number is often best stored as…',['TEXT','FLOAT','REAL','DATE'],0,'It is an identifier; TEXT can preserve leading zeros.']]},
+
+{id:'sql',title:'SQL Core: DDL, DML & DQL',icon:'⌨️',desc:'CREATE, ALTER, INSERT, SELECT, UPDATE, DELETE and safe query habits.',theory:[
+['DDL','Data Definition Language changes structure. Common commands: CREATE, ALTER, DROP and TRUNCATE (classification can vary by DBMS conventions).'],
+['DML','Data Manipulation Language changes stored rows: INSERT, UPDATE and DELETE.'],
+['DQL','SELECT is used to retrieve/query data. SQL classifications can vary by textbook, so follow your university\'s convention in exams.'],
+['Create & insert','Define a table, then insert rows using explicit column lists when possible.'],
+['Update & delete safely','Always test the WHERE condition with SELECT before a risky UPDATE or DELETE. Without a WHERE clause, many DBMSs will affect all matching rows/all rows.']
+],code:`CREATE TABLE students (
+  id INTEGER PRIMARY KEY,
+  name VARCHAR(50),
+  marks INTEGER
+);
+
+INSERT INTO students (id,name,marks)
+VALUES (1,'Pulkit',88);
+
+SELECT * FROM students;`,qs:[
+['CREATE TABLE is mainly used to…',['Define structure','Sort rows','Count rows','Start a transaction'],0,'CREATE TABLE defines a table and its columns/constraints.'],
+['Which changes existing row values?',['UPDATE','SELECT','CREATE','DESCRIBE'],0,'UPDATE changes existing data.'],
+['Before DELETE with a WHERE, a good habit is to…',['Run the same WHERE as SELECT first','Drop the database','Remove the primary key','Use CSS'],0,'Preview the target rows before deleting.']]},
+
+{id:'select',title:'SELECT, WHERE & Sorting',icon:'🔎',desc:'Filtering, aliases, LIKE, IN, BETWEEN, ORDER BY and LIMIT.',theory:[
+['SELECT basics','SELECT chooses columns from one or more sources. Use aliases with AS to make output easier to read.'],
+['WHERE','WHERE filters rows. Use comparison and logical operators such as =, <>, >, <, >=, <=, AND, OR and NOT.'],
+['LIKE, IN, BETWEEN','LIKE supports patterns such as P%; IN checks membership in a list; BETWEEN is inclusive of both boundaries in standard SQL usage.'],
+['ORDER BY & LIMIT','ORDER BY sorts results. ASC is ascending and DESC is descending. LIMIT restricts returned rows in systems that support it, including SQLite and MySQL.'],
+['DISTINCT','DISTINCT removes duplicate result rows from the selected projection.']
+],code:`SELECT name, marks
+FROM students
+WHERE marks >= 80
+ORDER BY marks DESC
+LIMIT 5;`,qs:[
+['Which filters individual rows?',['WHERE','HAVING','ORDER BY','GROUP BY'],0,'WHERE filters rows before grouping.'],
+['LIKE P% means…',['Ends with P','Starts with P','Exactly P','Contains no P'],1,'% matches any sequence of characters.'],
+['ORDER BY marks DESC means…',['Lowest first','Highest first','Random order','Only NULLs'],1,'DESC sorts from high to low for numeric marks.']]},
+
+{id:'functions',title:'Functions & Aggregation',icon:'📊',desc:'COUNT, SUM, AVG, MIN, MAX, GROUP BY and HAVING.',theory:[
+['Aggregate functions','COUNT counts rows/values, SUM adds values, AVG calculates an average, MIN finds the minimum and MAX finds the maximum.'],
+['GROUP BY','GROUP BY partitions rows into groups so aggregate calculations can be performed per group.'],
+['WHERE vs HAVING','WHERE filters individual rows before grouping; HAVING filters groups after aggregation.'],
+['COUNT(*) vs COUNT(column)','COUNT(*) counts rows. COUNT(column) counts non-NULL values in that column.'],
+['Aliases','Use AS to give calculated expressions readable names, such as AVG(marks) AS average_marks.']
+],code:`SELECT course,
+       COUNT(*) AS students,
+       AVG(marks) AS average_marks
+FROM students
+GROUP BY course
+HAVING AVG(marks) >= 70
+ORDER BY average_marks DESC;`,qs:[
+['Which filters grouped results?',['WHERE','HAVING','ON','LIMIT'],1,'HAVING is used for group-level filtering.'],
+['COUNT(column) ignores…',['All values','NULL values','Integers','Strings'],1,'COUNT(column) counts non-NULL values.'],
+['GROUP BY is used to…',['Create groups for analysis','Delete groups','Create indexes','Rename tables'],0,'GROUP BY creates groups for aggregation.']]},
+
+{id:'joins',title:'JOINs & Subqueries',icon:'🔗',desc:'INNER/LEFT JOIN, ON conditions and nested queries.',theory:[
+['INNER JOIN','Returns rows where the join condition matches in both sources.'],
+['LEFT JOIN','Returns every row from the left source plus matching right-side rows; unmatched right-side columns become NULL.'],
+['Join condition','The ON clause normally states how related rows match, such as students.course_id = courses.id.'],
+['Subquery','A subquery is a query nested inside another query. It can be used with IN, EXISTS, comparison operators, FROM, and more depending on the DBMS.'],
+['Correlated subquery','A correlated subquery refers to a value from the outer query and may be evaluated in relation to each outer row.']
+],code:`SELECT s.name, c.name AS course
+FROM students AS s
+INNER JOIN courses AS c
+  ON s.course_id = c.id;
+
+-- Above-average students
+SELECT name, marks
+FROM students
+WHERE marks > (SELECT AVG(marks) FROM students);`,qs:[
+['Which JOIN keeps all left-side rows?',['INNER JOIN','LEFT JOIN','CROSS JOIN','UNION'],1,'LEFT JOIN preserves all left-side rows.'],
+['The relationship condition is commonly written in…',['ON','VALUES','LIMIT','DEFAULT'],0,'ON specifies how rows match.'],
+['A subquery is…',['A query inside another query','A database backup','A data type','A primary key'],0,'A subquery is nested within another SQL statement/query.']]},
+
+{id:'sets',title:'Views, Set Operations & SQL Tools',icon:'🛠️',desc:'Views, UNION, indexes and useful database operations.',theory:[
+['Views','A view is a named query that can be queried like a virtual table. It can simplify complex queries and help expose only selected data.'],
+['UNION vs UNION ALL','UNION combines compatible result sets and removes duplicate rows. UNION ALL keeps duplicates and is often faster.'],
+['Indexes','An index can speed up searches and joins on suitable columns, but indexes consume storage and add maintenance work to writes.'],
+['EXPLAIN','Many DBMSs provide EXPLAIN/EXPLAIN QUERY PLAN to inspect how a query is executed and reason about performance.']
+],code:`CREATE VIEW top_students AS
+SELECT id, name, marks
+FROM students
+WHERE marks >= 80;
+
+CREATE INDEX idx_students_name
+ON students(name);`,qs:[
+['A view is best described as…',['A virtual/query-defined table','A physical CPU','A primary key','A transaction log'],0,'A view is defined by a query and can be queried like a table.'],
+['UNION ALL…',['Removes duplicates','Keeps duplicates','Deletes tables','Creates indexes'],1,'UNION ALL retains duplicate rows.'],
+['Indexes generally…',['Can speed reads but add storage/write cost','Always slow reads','Replace primary keys','Store no metadata'],0,'Indexes trade storage/write maintenance for faster access patterns.']]},
+
+{id:'normalization',title:'Functional Dependency & Normalization',icon:'🧬',desc:'FDs, anomalies, 1NF, 2NF, 3NF, BCNF and decomposition.',theory:[
+['Functional dependency','X → Y means that the value of X determines the value of Y. Functional dependencies help analyze relational schemas.'],
+['Anomalies','Poorly designed tables can cause insertion, update and deletion anomalies because the same facts are repeated or mixed together.'],
+['1NF','First Normal Form requires atomic values and no repeating groups in the usual relational design treatment.'],
+['2NF','A relation in 2NF is in 1NF and has no partial dependency of a non-prime attribute on a proper subset of a candidate key. This matters especially with composite keys.'],
+['3NF','A relation in 3NF is in 2NF and has no problematic transitive dependency of non-prime attributes on candidate keys, under the standard definition.'],
+['BCNF','For every non-trivial functional dependency X → Y, X must be a super key. BCNF is stricter than 3NF.'],
+['Lossless decomposition','A decomposition is lossless when joining the decomposed relations reconstructs the original relation without spurious tuples.']
+],code:`-- Bad design idea:
+StudentID, StudentName, CourseID, CourseName
+
+-- Normalize into:
+Students(StudentID, StudentName)
+Courses(CourseID, CourseName)
+Enrollment(StudentID, CourseID)`,qs:[
+['1NF mainly requires…',['Atomic values','No foreign keys','Only integers','No tables'],0,'1NF requires atomic values/no repeating groups in the standard treatment.'],
+['2NF removes…',['Partial dependencies','All indexes','All candidate keys','Transactions'],0,'2NF addresses partial dependency on part of a composite candidate key.'],
+['BCNF requires the determinant of every non-trivial FD to be a…',['Super key','Foreign value','View','Trigger'],0,'In BCNF, every determinant must be a super key.']]},
+
+{id:'algebra',title:'Relational Algebra',icon:'∑',desc:'Selection, projection, union, difference, product and joins.',theory:[
+['Selection σ','Selection chooses rows satisfying a predicate. Think WHERE. Example: σ marks>80 (Students).'],
+['Projection π','Projection chooses attributes/columns. Think SELECT name, marks.'],
+['Union ∪','Combines compatible relations and removes duplicates under classical relational algebra semantics.'],
+['Set difference −','Returns tuples in the first relation that are not in the second, when the relations are union-compatible.'],
+['Cartesian product ×','Pairs every tuple of one relation with every tuple of another. Joins can be expressed using product plus selection.'],
+['Join ⋈','A join combines related tuples according to a condition.']
+],code:`-- SQL equivalents
+SELECT * FROM students WHERE marks > 80; -- selection
+SELECT name, marks FROM students;        -- projection
+`,qs:[
+['Relational algebra selection chooses…',['Rows','Columns','Databases','Indexes'],0,'Selection filters tuples/rows.'],
+['Projection chooses…',['Columns/attributes','Rows only','Transactions','Locks'],0,'Projection selects attributes.'],
+['Cartesian product pairs…',['Every tuple from each relation','Only matching keys','Only NULLs','Only primary keys'],0,'Cartesian product forms all tuple combinations.']]},
+
+{id:'transactions',title:'Transactions, ACID & Concurrency',icon:'⚡',desc:'Transactions, ACID, schedules, locks, serializability and deadlocks.',theory:[
+['Transaction','A transaction is a logical unit of database work that moves the database from one consistent state to another when correctly completed.'],
+['ACID','Atomicity: all-or-nothing. Consistency: preserves integrity rules. Isolation: concurrent execution should behave safely. Durability: committed changes survive failures.'],
+['COMMIT / ROLLBACK','COMMIT makes a transaction\'s changes permanent according to the DBMS. ROLLBACK undoes uncommitted changes. SAVEPOINT creates a point to roll back to.'],
+['Concurrency problems','Common problems include lost update, dirty read, non-repeatable read and phantom read.'],
+['Locks & 2PL','Lock-based protocols control concurrent access. Two-phase locking has a growing phase for acquiring locks and a shrinking phase for releasing them.'],
+['Deadlock','A deadlock occurs when transactions wait for one another in a cycle. Systems can use prevention, detection and recovery strategies.'],
+['Serializability','A schedule is serializable when its effect is equivalent to a serial execution under the relevant serializability criterion.']
+],code:`BEGIN;
+
+UPDATE accounts
+SET balance = balance - 100
+WHERE id = 1;
+
+UPDATE accounts
+SET balance = balance + 100
+WHERE id = 2;
+
+COMMIT;`,qs:[
+['A in ACID stands for…',['Atomicity','Access','Algorithm','Authorization'],0,'Atomicity means the transaction is all-or-nothing.'],
+['ROLLBACK generally…',['Undoes uncommitted transaction changes','Creates a table','Sorts rows','Adds an index'],0,'ROLLBACK reverses changes that have not been committed.'],
+['A deadlock involves…',['Cyclic waiting','Only SELECT','A missing semicolon','Duplicate columns'],0,'Deadlock occurs when transactions wait cyclically.']]},
+
+{id:'recovery',title:'Recovery, Indexing & Security',icon:'🛡️',desc:'Failures, logs, checkpoints, B/B+ trees, hashing and authorization.',theory:[
+['Failure types','Database systems can face transaction failures, system crashes and storage/media failures. Recovery techniques aim to preserve atomicity and durability.'],
+['Log-based recovery','A log records information about database changes so the system can redo or undo work during recovery.'],
+['Checkpoint','A checkpoint records a known recovery position and can reduce the amount of log that must be examined after a failure.'],
+['B-tree/B+ tree','Tree-based indexes keep searchable keys organized. B+ trees are widely used in database indexing because their leaf-level organization is efficient for range scans.'],
+['Hash indexing','Hashing can provide fast equality lookup when the access pattern fits, but is generally less suitable than tree indexes for ordered/range queries.'],
+['Security','Use authentication, authorization, least privilege, secure credentials, parameterized queries and auditing where appropriate.']
+],code:`-- Example index
+CREATE INDEX idx_students_marks
+ON students(marks);
+
+-- Many DBMSs support a plan inspection command such as:
+EXPLAIN SELECT * FROM students WHERE marks >= 80;`,qs:[
+['A recovery log helps the DBMS…',['Recover after failures','Format CSS','Create ER diagrams','Replace SQL'],0,'Logs provide information used during recovery.'],
+['B+ tree indexes are especially useful for…',['Ordered/range access','Only passwords','HTML rendering','Transactions only'],0,'Tree indexes support ordered navigation and range scans well.'],
+['Least privilege means…',['Give only necessary permissions','Give everyone admin access','Remove all users','Disable authentication'],0,'Users should receive only the permissions they need.']]},
+
+{id:'mastery',title:'🏆 Final DBMS Boss Fight',icon:'👑',desc:'Mixed university-style theory, SQL, design and debugging.',theory:[
+['Exam strategy','For definitions, write a precise one-line definition first, then add two or three key properties and an example. For SQL, identify the table, required columns, condition, grouping, sorting and joins before writing the query.'],
+['High-value comparisons','Know Primary vs Foreign Key, WHERE vs HAVING, DELETE vs TRUNCATE vs DROP, CHAR vs VARCHAR, UNION vs UNION ALL, 2NF vs 3NF and DBMS vs RDBMS.'],
+['Final checklist','You should be able to design an ER model, map it to relations, choose keys/constraints, write SQL, explain relational algebra, normalize a schema, and explain ACID/concurrency/recovery.']
+],code:`-- Boss challenge:
+-- Find the top 5 students with marks >= 80.
+-- Show name and marks.
+-- Sort highest first.
+SELECT name, marks
+FROM students
+WHERE marks >= 80
+ORDER BY marks DESC
+LIMIT 5;`,qs:[
+['Which clause normally comes after GROUP BY to filter groups?',['HAVING','WHERE','ON','VALUES'],0,'HAVING filters grouped results.'],
+['Which normal form removes partial dependency?',['2NF','1NF','5NF','BCNF only'],0,'2NF addresses partial dependency.'],
+['What is the safest first step before a mass UPDATE?',['SELECT the same WHERE condition','DROP the table','Remove constraints','Disable the DBMS'],0,'Preview exactly which rows will be affected.'],
+['Which key establishes a relationship between tables?',['Foreign key','Alternate key only','Index only','View'],0,'A foreign key references a key in another table.'],
+['What does D in ACID mean?',['Durability','Dependency','Definition','Deletion'],0,'Durability means committed changes survive failures.'],
+['Relational algebra projection corresponds most closely to…',['Choosing columns','Filtering rows','Starting transactions','Creating indexes'],0,'Projection chooses attributes/columns.'],
+['UNION ALL differs from UNION because it…',['Keeps duplicates','Deletes duplicates','Requires a primary key','Only joins tables'],0,'UNION ALL retains duplicate rows.'],
+['A LEFT JOIN returns…',['All left rows plus matches','Only matching rows','Only right rows','No NULLs'],0,'LEFT JOIN preserves all left-side rows.']]
+}
+];
+
+
+/* ===== QueryVerse Cloud Accounts =====
+   Create a free Supabase project, then paste its URL + anon key below.
+   Auth uses Supabase email/password. Each account gets its own workspace.
+*/
+const SUPABASE_URL = 'https://bdzwsnelqfjghtnhopzz.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_8uYb8grVLEkXJQKSqAyYHw_FVZpMni9';
+let supa = null, currentUser = null, cloudTimer = null;
+
+function cloudConfigured(){
+  return SUPABASE_URL.startsWith('http') && !SUPABASE_URL.includes('PASTE_') &&
+         SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes('PASTE_');
+}
+if(cloudConfigured() && window.supabase){
+  supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+function showAuth(mode){
+  const login = mode==='login';
+  document.getElementById('loginTab').classList.toggle('active',login);
+  document.getElementById('signupTab').classList.toggle('active',!login);
+  document.getElementById('authSubmit').textContent = login ? 'Login →' : 'Create account →';
+  document.getElementById('authMsg').className='authMsg';
+}
+function authMessage(text,err=false){
+  const x=document.getElementById('authMsg'); x.textContent=text;
+  x.className='authMsg show '+(err?'err':'ok');
+}
+async function submitAuth(e){
+  e.preventDefault();
+  if(!supa){authMessage('Cloud login is not configured yet. The site owner needs to add the free Supabase URL and anon key.',true);return;}
+  const email=document.getElementById('authEmail').value.trim();
+  const password=document.getElementById('authPassword').value;
+  const signup=document.getElementById('signupTab').classList.contains('active');
+  document.getElementById('authSubmit').disabled=true;
+  try{
+    const result=signup
+      ? await supa.auth.signUp({email,password})
+      : await supa.auth.signInWithPassword({email,password});
+    if(result.error) throw result.error;
+    if(signup && !result.data.session){
+      authMessage('Account created. Check your email to confirm the account, then log in.');
+    }else{
+      currentUser=result.data.user; await enterApp();
+    }
+  }catch(err){authMessage(err.message || 'Authentication failed.',true)}
+  finally{document.getElementById('authSubmit').disabled=false;}
+}
+async function enterApp(){
+  document.getElementById('authScreen').style.display='none';
+  const email=currentUser?.email||'Account';
+  document.getElementById('userPill').textContent='👤 '+email.split('@')[0]+' · Logout';
+  await loadCloudWorkspace();
+  init();
+}
+async function logout(){
+  if(supa) await supa.auth.signOut();
+  location.reload();
+}
+async function loadCloudWorkspace(){
+  if(!supa || !currentUser) return;
+  try{
+    const {data,error}=await supa.from('queryverse_workspaces')
+      .select('editor,db_base64,xp,progress')
+      .eq('user_id',currentUser.id).maybeSingle();
+    if(error) throw error;
+    if(data){
+      window.cloudEditor=data.editor||'';
+      window.cloudDB64=data.db_base64||'';
+      xp=Number(data.xp||0);
+      progress=data.progress||{};
+    }else{
+      // Brand-new account: start with a completely separate workspace.
+      window.cloudEditor='';
+      window.cloudDB64='';
+      xp=0;
+      progress={};
+    }
+  }catch(err){console.warn('Cloud workspace load:',err.message);}
+}
+function bytesToBase64(bytes){
+  let binary=''; const chunk=0x8000;
+  for(let i=0;i<bytes.length;i+=chunk) binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));
+  return btoa(binary);
+}
+function base64ToBytes(str){
+  const binary=atob(str); const bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+  return bytes;
+}
+async function saveCloudWorkspace(){
+  if(!supa || !currentUser || !db) return;
+  try{
+    const payload={
+      user_id:currentUser.id,
+      editor:document.getElementById('editor').value,
+      db_base64:bytesToBase64(db.export()),
+      xp:Number(xp||0),
+      progress:progress,
+      updated_at:new Date().toISOString()
+    };
+    const {error}=await supa.from('queryverse_workspaces').upsert(payload,{onConflict:'user_id'});
+    if(error) throw error;
+    toast('☁️ Saved to your cloud');
+  }catch(err){toast('Cloud save failed');console.warn(err);}
+}
+function scheduleCloudSave(){
+  clearTimeout(cloudTimer);
+  cloudTimer=setTimeout(saveCloudWorkspace,1200);
+}
+
+let db=null,currentLesson=0,activeSuggest=0,suggestions=[];
+let progress={};
+let xp=0;
+
+function esc(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function go(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.page===id));if(id==='home')renderHome();if(id==='learn')renderLearn()}
+document.querySelectorAll('.nav').forEach(n=>n.onclick=()=>go(n.dataset.page));
+
+async function init(){
+ try{
+  const SQL=await initSqlJs({locateFile:f=>'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.13.0/'+f});
+  db=window.cloudDB64 ? new SQL.Database(base64ToBytes(window.cloudDB64)) : new SQL.Database();
+   document.getElementById('dbStatus').textContent='● SQLite ready · cloud sync';document.getElementById('dbStatus').style.color='var(--b)';
+  editor.value=window.cloudEditor || sample;refreshTree();renderHome();
+ }catch(e){document.getElementById('dbStatus').textContent='● SQLite failed';showMsg('SQLite could not load. Check your internet connection and reload.',true)}
+}
+function run(){
+ if(!db)return showMsg('SQLite is still loading…',true);
+ let sql=editor.value.trim();if(!sql)return showMsg('Write a query first.',true);
+ try{
+  let last=null,shown=null;
+  const statements=sql.split(/;\s*(?=(?:[^'"]|'[^']*'|"[^"]*")*$)/).map(x=>x.trim()).filter(Boolean);
+  for(const s of statements){
+   if(/^(SELECT|PRAGMA|WITH)\b/i.test(s)){let r=db.exec(s);if(r.length)shown=r[0]}
+   else{db.run(s);let m=s.match(/^\s*(?:INSERT\s+INTO|UPDATE|DELETE\s+FROM|CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?|ALTER\s+TABLE|DROP\s+TABLE(?:\s+IF\s+EXISTS)?)\s+(?:"([^"]+)"|`([^`]+)`|\[([^\]]+)\]|([A-Za-z_][\w]*))/i);if(m)last=m[1]||m[2]||m[3]||m[4]}
+  }
+  if(shown)renderTable(shown);else if(last){let r=db.exec(`SELECT * FROM "${last.replace(/"/g,'""')}"`);r.length?renderTable(r[0]):showMsg('Query executed. The table is empty.',false)}
+  else showMsg('Query executed successfully ✨',false);
+  refreshTree();toast('Query executed · nice work +5 XP');addXP(5);scheduleCloudSave();
+ }catch(e){showError(e.message)}
+}
+function renderTable(r){
+ document.getElementById('results').innerHTML='<table><thead><tr>'+r.columns.map(c=>`<th>${esc(c)}</th>`).join('')+'</tr></thead><tbody>'+r.values.map(row=>'<tr>'+row.map(v=>`<td>${esc(v===null?'NULL':v)}</td>`).join('')+'</tr>').join('')+'</tbody></table>';
+}
+function showMsg(t,err){document.getElementById('results').innerHTML=`<div class="msg ${err?'err':'ok'}">${esc(t)}</div>`}
+function showError(t){
+ let hint=t;
+ if(/near "FORM"/i.test(t))hint+='\\n\\n💡 Did you mean FROM? Check your SQL keyword spelling.';
+ else if(/no such table/i.test(t))hint+='\\n\\n💡 Check the table name in the Database panel.';
+ else if(/no such column/i.test(t))hint+='\\n\\n💡 Check the column name and table alias.';
+ else if(/syntax error/i.test(t))hint+='\\n\\n💡 Check commas, parentheses, quotes and clause order.';
+ document.getElementById('results').innerHTML=`<div class="msg err">🐛 SQL Detective\\n\\n${esc(hint)}</div>`;
+}
+function refreshTree(){
+ if(!db)return;let root=document.getElementById('tree');
+ let r=db.exec("SELECT name,type FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' ORDER BY type,name");
+ if(!r.length){root.innerHTML='<div class="sideItem">📦 No tables yet</div>';return}
+ root.innerHTML=r[0].values.map(x=>`<div class="sideItem" onclick="viewTable('${esc(x[0]).replace(/'/g,"&#39;")}')">📦 ${esc(x[0])}</div>`).join('');
+}
+function viewTable(name){editor.value=`SELECT * FROM "${name.replace(/"/g,'""')}";`;run()}
+function insertText(t){editor.focus();let p=editor.selectionStart;editor.setRangeText(t,p,p,'end');editor.focus()}
+function loadSample(){editor.value=sample;go('practice');editor.focus();toast('Sample loaded')}
+editor.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();run()}
+ if(suggestions.length&&(e.key==='ArrowDown'||e.key==='ArrowUp'||e.key==='Tab'||e.key==='Enter')){e.preventDefault();if(e.key==='ArrowDown')activeSuggest=(activeSuggest+1)%suggestions.length;else if(e.key==='ArrowUp')activeSuggest=(activeSuggest-1+suggestions.length)%suggestions.length;else insertSuggestion(activeSuggest);drawSuggest()}
+});
+editor.addEventListener('input',()=>{suggestNow();if(currentUser)scheduleCloudSave()});
+function currentWord(){let x=editor.value.slice(0,editor.selectionStart).match(/[A-Za-z_][A-Za-z0-9_]*$/);return x?x[0]:''}
+const words=['SELECT','FROM','WHERE','AND','OR','NOT','NULL','IS','IN','LIKE','BETWEEN','AS','DISTINCT','INSERT INTO','VALUES','UPDATE','SET','DELETE FROM','CREATE TABLE','ALTER TABLE','DROP TABLE','PRIMARY KEY','FOREIGN KEY','REFERENCES','UNIQUE','CHECK','DEFAULT','JOIN','INNER JOIN','LEFT JOIN','RIGHT JOIN','CROSS JOIN','ON','GROUP BY','HAVING','ORDER BY','ASC','DESC','LIMIT','OFFSET','UNION','UNION ALL','CASE','WHEN','THEN','ELSE','END','COUNT','SUM','AVG','MIN','MAX','ROUND','COALESCE','IFNULL','LENGTH','LOWER','UPPER','SUBSTR','REPLACE','TRIM','CAST'];
+function suggestNow(){
+ let w=currentWord().toUpperCase();if(!w){suggest.style.display='none';return}
+ let tables=[];try{let r=db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");if(r.length)tables=r[0].values.map(x=>x[0])}catch(_){}
+ suggestions=[...new Set([...words,...tables])].filter(x=>x.toUpperCase().startsWith(w)).slice(0,10);activeSuggest=0;
+ if(!suggestions.length){suggest.style.display='none';return}
+ suggest.innerHTML=suggestions.map((x,i)=>`<div class="${i===0?'on':''}" onclick="insertSuggestion(${i})"><span>${esc(x)}</span><small>${words.includes(x)?'SQL':'TABLE'}</small></div>`).join('');
+ let line=(editor.value.slice(0,editor.selectionStart).match(/\n/g)||[]).length;
+ suggest.style.left='50px';suggest.style.top=Math.min(editor.parentElement.clientHeight-225,16+line*24)+'px';suggest.style.display='block';
+}
+function drawSuggest(){suggest.querySelectorAll('div').forEach((d,i)=>d.classList.toggle('on',i===activeSuggest))}
+function insertSuggestion(i){let w=currentWord(),p=editor.selectionStart;editor.setRangeText(suggestions[i],p-w.length,p,'end');suggest.style.display='none';editor.focus()}
+
+function renderHome(){
+ const done=lessons.filter(l=>progress[l.id]).length,pct=Math.round(done/lessons.length*100);
+ document.getElementById('xpTop').textContent=xp;document.getElementById('xpHome').textContent=xp;document.getElementById('lessonsDone').textContent=done;
+ document.getElementById('homeFill').style.width=pct+'%';document.getElementById('level').textContent='Level '+(1+Math.floor(xp/100));
+ document.getElementById('homePath').innerHTML=lessons.map((l,i)=>`<div class="card lesson"><div class="num">TOPIC ${String(i+1).padStart(2,'0')}</div><div class="done">${progress[l.id]?'✓':''}</div><div style="font-size:28px;margin-top:7px">${l.icon}</div><h3>${esc(l.title)}</h3><p>${esc(l.desc)}</p><button onclick="openLesson(${i})">${progress[l.id]?'Review':'Learn'} →</button></div>`).join('');
+}
+function openLesson(i){currentLesson=i;go('learn')}
+function renderLearn(){
+ const l=lessons[currentLesson],done=lessons.filter(x=>progress[x.id]).length;
+ document.getElementById('learnProgress').textContent=`${done}/${lessons.length} mastered`;
+ document.getElementById('lessonNav').innerHTML=lessons.map((x,i)=>`<div class="topic ${i===currentLesson?'sel ':''}${progress[x.id]?'done':''}" onclick="openLesson(${i})">${x.icon} ${esc(x.title)} ${progress[x.id]?'✓':''}</div>`).join('');
+ let h=`<h1>${l.icon} ${esc(l.title)}</h1><p>${esc(l.desc)}</p>`;
+ l.theory.forEach(x=>h+=`<h2>${esc(x[0])}</h2><p>${esc(x[1])}</p>`);
+ h+=`<h2>🧪 Practice</h2><div class="code">${esc(l.code)}</div><button class="cta" onclick="practiceLesson()">Open in Practice Lab →</button>`;
+ h+=`<div class="quiz"><h2>🧠 Assessment</h2><p>Get at least 80% to master this topic.</p>`;
+ l.qs.forEach((q,i)=>{h+=`<div class="q"><b>${i+1}. ${esc(q[0])}</b>${q[1].map((o,j)=>`<label class="opt"><input type="radio" name="q${i}" value="${j}"> ${esc(o)}</label>`).join('')}<div id="fb${i}"></div></div>`});
+ h+=`<button class="assessBtn" onclick="grade()">Check answers</button><div id="score" style="margin-top:13px"></div></div>`;
+ document.getElementById('theory').innerHTML=h;
+}
+function practiceLesson(){editor.value=lessons[currentLesson].code;go('practice');editor.focus();toast('Practice loaded — experiment freely 🧪')}
+function grade(){
+ const l=lessons[currentLesson];let score=0;
+ l.qs.forEach((q,i)=>{
+   let c=document.querySelector(`input[name="q${i}"]:checked`),f=document.getElementById('fb'+i);
+   if(c&&+c.value===q[2]){score++;f.className='feedback good';f.textContent='✓ Correct — '+q[3]}
+   else{f.className='feedback bad';f.textContent='✗ '+q[3]}
+ });
+ let pct=Math.round(score/l.qs.length*100);
+ const scoreEl=document.getElementById('score');
+ scoreEl.innerHTML=`<b>Score: ${score}/${l.qs.length} · ${pct}%</b> ${pct>=80?'🏆 Mastered!':'· Review the explanations and try again.'}`;
+ if(pct>=80&&!progress[l.id]){
+   progress[l.id]=true;
+   addXP(50);toast('Topic mastered · +50 XP 🏆');
+ }
+ renderHome();
+}
+function addXP(n){xp+=n;renderHome();if(currentUser)scheduleCloudSave()}
+function toast(t){let x=document.getElementById('toast');x.textContent=t;x.classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>x.classList.remove('show'),2200)}
+document.addEventListener('click',e=>{if(e.target!==editor&&!suggest.contains(e.target))suggest.style.display='none'});
+async function boot(){
+  if(!supa){
+    document.getElementById('dbStatus').textContent='● Cloud setup required';
+    return;
+  }
+  const {data}=await supa.auth.getSession();
+  if(data.session){
+    currentUser=data.session.user;
+    await enterApp();
+  }else{
+    document.getElementById('authScreen').style.display='flex';
+  }
+  supa.auth.onAuthStateChange((_event,session)=>{
+    if(session && !currentUser){currentUser=session.user;enterApp();}
+  });
+}
+boot();
+</script>
+</body>
+</html>
